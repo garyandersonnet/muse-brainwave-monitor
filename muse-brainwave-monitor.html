@@ -1,1 +1,2425 @@
-See the full single-file application at the root. Due to size, please clone and push locally or contact for the latest version.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muse • Brain Waves</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+    
+    :root {
+      --bg: #0a0b10;
+    }
+    
+    body {
+      font-family: 'Inter', system_ui, sans-serif;
+    }
+    
+    .font-display {
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+      font-weight: 600;
+    }
+
+    .neuro-bg {
+      background: 
+        linear-gradient(180deg, #0a0b10 0%, #0f1118 100%),
+        radial-gradient(circle at 50% 20%, rgba(103, 232, 249, 0.04) 0%, transparent 50%);
+    }
+
+    .section-card {
+      background: #11141f;
+      border: 1px solid #1f2537;
+    }
+
+    .neon-cyan {
+      color: #67e8f9;
+      text-shadow: 0 0 8px rgba(103, 232, 249, 0.5);
+    }
+
+    .neon-purple {
+      color: #c084fc;
+      text-shadow: 0 0 8px rgba(192, 132, 252, 0.4);
+    }
+
+    .wave-canvas {
+      background: #0b0d15;
+      border: 1px solid #1f2537;
+      border-radius: 12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    .channel-label {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+    }
+
+    .metric-value {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .band-bar {
+      transition: width 120ms cubic-bezier(0.23, 1, 0.32, 1);
+      box-shadow: 0 0 12px currentColor;
+    }
+
+    .brain-glow {
+      box-shadow: 0 0 25px rgba(103, 232, 249, 0.15),
+                  0 0 50px rgba(192, 132, 252, 0.08);
+    }
+
+    .status-pill {
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .eeg-line {
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .monitor-grid {
+      background-image: 
+        linear-gradient(rgba(31, 37, 55, 0.35) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(31, 37, 55, 0.35) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+
+    .mental-state {
+      transition: all 400ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .stat-number {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    .wave-glow {
+      filter: drop-shadow(0 0 2px rgba(103, 232, 249, 0.6));
+    }
+
+    .sensor-dot {
+      transition: all 200ms ease;
+    }
+
+    .log-line {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body class="bg-[#0a0b10] text-slate-200 neuro-bg">
+  <!-- Header -->
+  <div class="border-b border-slate-800 bg-[#0a0b10]/95 backdrop-blur-lg sticky top-0 z-50">
+    <div class="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-x-4">
+        <div class="flex items-center gap-x-3">
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-400 flex items-center justify-center">
+            <i class="fa-solid fa-brain text-[#0a0b10] text-2xl"></i>
+          </div>
+          <div>
+            <span class="font-display text-2xl tracking-tighter font-semibold">muse</span>
+            <span class="font-display text-2xl tracking-tighter text-slate-500">waves</span>
+          </div>
+        </div>
+        <div class="px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs font-medium text-slate-400">Muse S • 256 Hz</div>
+      </div>
+
+      <div class="flex items-center gap-x-3">
+        <!-- Connection Status -->
+        <div id="status-pill"
+             class="status-pill px-4 h-8 rounded-3xl border flex items-center gap-x-2 bg-slate-900 border-slate-700 text-slate-400">
+          <i class="fa-solid fa-circle text-xs"></i>
+          <span id="status-text">DISCONNECTED</span>
+        </div>
+
+        <div class="flex items-center gap-x-2 px-3 py-1.5 rounded-3xl bg-slate-900 border border-slate-800 text-xs">
+          <i class="fa-solid fa-battery-three-quarters text-emerald-400"></i>
+          <span id="battery-text" class="tabular-nums font-medium">87%</span>
+        </div>
+
+        <button onclick="showHelp()"
+                class="w-8 h-8 flex items-center justify-center rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 transition-colors">
+          <i class="fa-solid fa-question text-sm"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-[1280px] mx-auto px-6 pt-7 pb-12">
+    <!-- Hero / Title -->
+    <div class="flex items-end justify-between mb-6">
+      <div>
+        <h1 class="font-display text-5xl tracking-tighter font-semibold">Brain Waves</h1>
+        <p class="text-lg text-slate-400 mt-1">Real-time brain wave monitoring • 4-channel Muse S</p>
+      </div>
+      
+      <div class="flex items-center gap-x-3" id="connect-button-group">
+        <!-- Demo button -->
+        <button onclick="connectDemo()"
+                id="connect-demo-btn"
+                class="px-5 h-11 rounded-3xl bg-white/90 text-[#0a0b10] hover:bg-white active:scale-[0.985] transition-all flex items-center gap-x-2 text-sm font-semibold shadow-lg shadow-white/10">
+          <i class="fa-solid fa-flask"></i>
+          <span>Demo</span>
+        </button>
+
+        <!-- Real Muse button -->
+        <button onclick="connectRealMuse()"
+                id="connect-real-btn"
+                class="px-6 h-11 rounded-3xl bg-indigo-500 hover:bg-indigo-400 active:scale-[0.985] transition-all flex items-center gap-x-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30">
+          <i class="fa-brands fa-bluetooth-b"></i>
+          <span>Connect Real Muse</span>
+        </button>
+        
+        <button onclick="disconnect()"
+                id="disconnect-btn"
+                class="hidden px-5 h-11 rounded-3xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-medium items-center gap-x-2 transition-all">
+          <i class="fa-solid fa-unlink"></i>
+          <span>DISCONNECT</span>
+        </button>
+      </div>
+
+      <!-- AUX Probe Toggle -->
+      <div class="mt-2 flex items-center gap-x-2 text-xs">
+        <label class="flex items-center gap-x-1.5 cursor-pointer select-none text-slate-300 hover:text-slate-100">
+          <input type="checkbox" id="aux-toggle" class="accent-emerald-400" onchange="onAuxToggleChange()">
+          <span class="font-medium">Enable AUX Probe</span>
+          <span class="text-[10px] text-slate-500">(5th channel via USB port)</span>
+        </label>
+      </div>
+
+      <!-- Real connection troubleshooting area (shown on failure) -->
+      <div id="real-troubleshooter" class="hidden mt-3 w-full max-w-[520px] text-xs border border-amber-800 bg-amber-950/60 rounded-2xl px-4 py-3 text-amber-200">
+        <div class="flex items-start gap-x-2">
+          <i class="fa-solid fa-exclamation-triangle mt-0.5 text-amber-400"></i>
+          <div class="flex-1" id="troubleshooter-content">
+            <!-- Populated by JS -->
+          </div>
+          <button onclick="hideConnectionTroubleshooter()" class="text-amber-300 hover:text-white ml-2">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      
+      <!-- EEG Waveforms -->
+      <div class="lg:col-span-7 section-card rounded-3xl p-5 border border-slate-800">
+        <div class="flex items-center justify-between mb-3 px-1">
+          <div class="flex items-center gap-x-2">
+            <i class="fa-solid fa-waveform-lines text-cyan-400"></i>
+            <span class="font-semibold tracking-tight text-lg">Raw EEG Streams</span>
+          </div>
+          <div class="text-xs px-2.5 py-px rounded bg-slate-950 border border-slate-800 text-slate-400 font-medium tabular-nums">
+            256 Hz • <span id="sample-count">0</span> samples
+          </div>
+        </div>
+
+        <!-- 4 Channel Waveforms -->
+        <div class="space-y-3" id="waveform-container">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Band Powers + Mental State -->
+      <div class="lg:col-span-5 flex flex-col gap-5">
+        
+        <!-- Band Powers -->
+        <div class="section-card rounded-3xl p-5 border border-slate-800 flex-1">
+          <div class="flex items-center justify-between mb-4 px-1">
+            <div class="font-semibold tracking-tight flex items-center gap-x-2">
+              <i class="fa-solid fa-chart-column text-violet-400"></i>
+              <span>Band Powers</span>
+            </div>
+            <div class="text-[10px] text-slate-500 font-medium">RELATIVE POWER</div>
+          </div>
+
+          <div class="space-y-3.5" id="band-powers">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Mental State -->
+        <div class="section-card rounded-3xl p-5 border border-slate-800">
+          <div class="px-1 mb-2 flex items-center justify-between">
+            <div class="font-semibold tracking-tight">Mental State</div>
+            <div id="meditation-score" 
+                 class="text-xs px-2.5 py-0.5 rounded-2xl bg-slate-900 border border-slate-800 tabular-nums font-semibold">78</div>
+          </div>
+
+          <div id="mental-state-card"
+               class="mental-state rounded-2xl p-4 border border-slate-700 bg-slate-950 flex items-center gap-4">
+            <div class="flex-1">
+              <div id="mental-state-label" 
+                   class="font-display text-3xl tracking-tighter font-semibold text-white">Relaxed</div>
+              <div id="mental-state-desc" class="text-xs text-slate-400 mt-0.5">Elevated alpha • calm focus</div>
+            </div>
+            <div class="w-14 h-14 rounded-2xl flex-shrink-0 border border-slate-700 bg-slate-900 flex items-center justify-center">
+              <i id="mental-state-icon" class="fa-solid fa-spa text-3xl text-cyan-400"></i>
+            </div>
+          </div>
+          
+          <div class="mt-3 grid grid-cols-5 gap-1.5 text-[10px]">
+            <div class="text-center"><span class="text-emerald-400">α</span> <span id="alpha-pct" class="tabular-nums font-semibold text-slate-300">42</span></div>
+            <div class="text-center"><span class="text-amber-400">β</span> <span id="beta-pct" class="tabular-nums font-semibold text-slate-300">21</span></div>
+            <div class="text-center"><span class="text-sky-400">θ</span> <span id="theta-pct" class="tabular-nums font-semibold text-slate-300">18</span></div>
+            <div class="text-center"><span class="text-indigo-400">δ</span> <span id="delta-pct" class="tabular-nums font-semibold text-slate-300">14</span></div>
+            <div class="text-center"><span class="text-rose-400">γ</span> <span id="gamma-pct" class="tabular-nums font-semibold text-slate-300">5</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Head Map + Session Controls -->
+      <div class="lg:col-span-3 section-card rounded-3xl p-5 border border-slate-800">
+        <div class="px-1 mb-3">
+          <div class="font-semibold tracking-tight flex items-center gap-x-2">
+            <i class="fa-solid fa-headset text-emerald-400"></i>
+            <span>Sensor Map</span>
+          </div>
+        </div>
+
+        <!-- Simple Head / Electrode Visualization -->
+        <div class="relative mx-auto w-[168px] h-[168px] bg-slate-950 border border-slate-800 rounded-full flex items-center justify-center mb-4">
+          <div class="w-20 h-20 border border-slate-700 rounded-full"></div>
+          
+          <!-- Electrodes -->
+          <!-- TP9 Left ear -->
+          <div class="absolute left-[18px] top-1/2 -translate-y-1/2 w-5 h-5">
+            <div id="sensor-tp9" class="sensor-dot w-5 h-5 rounded-full bg-emerald-400/90 flex items-center justify-center ring-1 ring-emerald-400/60">
+              <div class="w-1.5 h-1.5 bg-[#0a0b10] rounded-full"></div>
+            </div>
+            <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 text-[9px] font-semibold text-emerald-300 tracking-wider">TP9</div>
+          </div>
+          
+          <!-- AF7 Left forehead -->
+          <div class="absolute left-[42px] top-[38px] w-5 h-5">
+            <div id="sensor-af7" class="sensor-dot w-5 h-5 rounded-full bg-emerald-400/90 flex items-center justify-center ring-1 ring-emerald-400/60">
+              <div class="w-1.5 h-1.5 bg-[#0a0b10] rounded-full"></div>
+            </div>
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-semibold text-emerald-300 tracking-wider">AF7</div>
+          </div>
+          
+          <!-- AF8 Right forehead -->
+          <div class="absolute right-[42px] top-[38px] w-5 h-5">
+            <div id="sensor-af8" class="sensor-dot w-5 h-5 rounded-full bg-emerald-400/90 flex items-center justify-center ring-1 ring-emerald-400/60">
+              <div class="w-1.5 h-1.5 bg-[#0a0b10] rounded-full"></div>
+            </div>
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-semibold text-emerald-300 tracking-wider">AF8</div>
+          </div>
+          
+          <!-- TP10 Right ear -->
+          <div class="absolute right-[18px] top-1/2 -translate-y-1/2 w-5 h-5">
+            <div id="sensor-tp10" class="sensor-dot w-5 h-5 rounded-full bg-emerald-400/90 flex items-center justify-center ring-1 ring-emerald-400/60">
+              <div class="w-1.5 h-1.5 bg-[#0a0b10] rounded-full"></div>
+            </div>
+            <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 text-[9px] font-semibold text-emerald-300 tracking-wider">TP10</div>
+          </div>
+        </div>
+
+        <div class="text-[10px] text-center text-slate-400">
+          Excellent contact quality
+          <span id="aux-status" class="ml-1 text-emerald-400 font-medium"></span>
+        </div>
+        
+        <div class="mt-4 pt-4 border-t border-slate-800 text-xs space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Session time</span>
+            <span id="session-time" class="font-mono font-semibold tabular-nums">00:00</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Avg. alpha</span>
+            <span id="avg-alpha" class="font-semibold tabular-nums">—</span>
+          </div>
+        </div>
+
+        <!-- Head Position from Gyroscope -->
+        <div class="mt-4 pt-4 border-t border-slate-800">
+          <div class="flex items-center justify-between text-sm mb-2">
+            <span class="font-semibold text-slate-300">Head Position</span>
+            <span id="gyro-status" class="text-xs px-2 py-px rounded bg-slate-900 text-slate-400">Gyro</span>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <!-- Visual head attitude indicator (bigger head with eyes) -->
+            <div class="relative w-24 h-24 flex-shrink-0">
+              <div id="head-position-visual"
+                   class="w-24 h-24 rounded-full border border-slate-700 bg-slate-950 flex items-center justify-center transition-transform duration-100"
+                   style="transform: rotate(0deg);">
+
+                <!-- SVG Head with Eyes -->
+                <svg id="head-svg" width="88" height="88" viewBox="0 0 88 88" class="drop-shadow-md">
+                  <!-- Head shape -->
+                  <circle cx="44" cy="44" r="36" fill="#1f2937" stroke="#4b5563" stroke-width="2"/>
+                  
+                  <!-- Left eye white -->
+                  <ellipse id="eye-left-white" cx="28" cy="38" rx="7" ry="5" fill="#e5e7eb"/>
+                  <!-- Left pupil -->
+                  <circle id="eye-left-pupil" cx="28" cy="38" r="3" fill="#0f172a"/>
+                  
+                  <!-- Right eye white -->
+                  <ellipse id="eye-right-white" cx="60" cy="38" rx="7" ry="5" fill="#e5e7eb"/>
+                  <!-- Right pupil -->
+                  <circle id="eye-right-pupil" cx="60" cy="38" r="3" fill="#0f172a"/>
+                  
+                  <!-- Optional subtle eyebrows -->
+                  <path id="brow-left" d="M21 31 Q28 28 35 31" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
+                  <path id="brow-right" d="M53 31 Q60 28 67 31" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+
+              </div>
+            </div>
+
+            <div class="text-xs space-y-1 flex-1">
+              <div class="flex justify-between"><span class="text-slate-400">Pitch</span> <span id="gyro-pitch" class="font-mono tabular-nums w-10 text-right">0°</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">Roll</span>  <span id="gyro-roll" class="font-mono tabular-nums w-10 text-right">0°</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">Yaw</span>  <span id="gyro-yaw" class="font-mono tabular-nums w-10 text-right">0°</span></div>
+            </div>
+          </div>
+
+          <!-- Angular velocity bars (larger) -->
+          <div class="mt-3 text-xs">
+            <div class="text-slate-400 mb-1">Angular velocity (deg/s)</div>
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-2 text-[10px]">
+                <span class="w-3 text-slate-400">X</span>
+                <div class="flex-1 h-1.5 bg-slate-800 rounded"><div id="gyro-bar-x" class="h-1.5 bg-cyan-400 rounded transition-all" style="width: 50%"></div></div>
+                <span id="gyro-val-x" class="font-mono w-8 text-right tabular-nums">0.0</span>
+              </div>
+              <div class="flex items-center gap-2 text-[10px]">
+                <span class="w-3 text-slate-400">Y</span>
+                <div class="flex-1 h-1.5 bg-slate-800 rounded"><div id="gyro-bar-y" class="h-1.5 bg-violet-400 rounded transition-all" style="width: 50%"></div></div>
+                <span id="gyro-val-y" class="font-mono w-8 text-right tabular-nums">0.0</span>
+              </div>
+              <div class="flex items-center gap-2 text-[10px]">
+                <span class="w-3 text-slate-400">Z</span>
+                <div class="flex-1 h-1.5 bg-slate-800 rounded"><div id="gyro-bar-z" class="h-1.5 bg-amber-400 rounded transition-all" style="width: 50%"></div></div>
+                <span id="gyro-val-z" class="font-mono w-8 text-right tabular-nums">0.0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Spectrum + Controls -->
+      <div class="lg:col-span-9 section-card rounded-3xl p-5 border border-slate-800">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-y-3 mb-3 px-1">
+          <div>
+            <span class="font-semibold tracking-tight">Brain Wave Spectrogram</span>
+            <span class="ml-2 text-xs text-slate-500">Frequency over time • 1–50 Hz</span>
+          </div>
+          <div class="flex items-center gap-x-2">
+            <button onclick="toggleSonification()" id="audio-btn"
+                    class="text-xs flex items-center gap-x-1.5 px-3 h-8 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-600 active:bg-slate-800 transition-colors">
+              <i class="fa-solid fa-volume-off"></i>
+              <span class="font-medium">Audio Feedback</span>
+            </button>
+            
+            <button onclick="toggleRecording()"
+                    id="record-btn"
+                    class="text-xs flex items-center gap-x-1.5 px-3 h-8 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-600 active:bg-slate-800 transition-colors">
+              <i class="fa-solid fa-circle text-red-400"></i>
+              <span class="font-medium" id="record-text">Record CSV</span>
+            </button>
+            
+            <button onclick="resetSession()"
+                    class="text-xs px-3 h-8 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-600 active:bg-slate-800 transition-colors">
+              <i class="fa-solid fa-undo mr-1"></i>
+              <span class="font-medium">Reset</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="relative">
+          <canvas id="spectrum-canvas" width="1100" height="168" class="w-full h-[168px] rounded-2xl border border-slate-800 bg-[#0b0d15]"></canvas>
+          <!-- Frequency scale labels -->
+          <div class="absolute right-3 top-0 bottom-0 flex flex-col justify-between py-1 text-[9px] font-mono text-slate-500 pointer-events-none">
+            <div>50 Hz</div>
+            <div class="text-center">25</div>
+            <div>0 Hz</div>
+          </div>
+          <div class="absolute bottom-1 left-3 text-[9px] text-slate-500 font-medium tracking-wider pointer-events-none">TIME →</div>
+        </div>
+        
+        <!-- State Modulation Sliders -->
+        <div class="mt-5 pt-4 border-t border-slate-800">
+          <div class="flex items-center justify-between text-xs mb-2.5 px-0.5">
+            <div class="font-medium text-slate-400">
+              MENTAL STATE INFLUENCE
+              <span id="sliders-hint" class="text-[10px] text-amber-400 ml-1.5 hidden">(demo only)</span>
+            </div>
+            <button onclick="resetSliders()" class="text-[10px] px-2 py-px rounded hover:bg-slate-800 text-slate-400">RESET</button>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3 text-xs">
+            <div>
+              <div class="flex justify-between mb-1 px-0.5 text-slate-300">
+                <div><span class="text-cyan-400">Relax</span> <span class="text-slate-500">(α)</span></div>
+                <span id="relax-val" class="tabular-nums font-mono text-slate-400">50</span>
+              </div>
+              <input type="range" id="relax-slider" min="0" max="100" value="50" 
+                     class="w-full accent-cyan-400" oninput="updateSimulatorFromSliders()">
+            </div>
+            <div>
+              <div class="flex justify-between mb-1 px-0.5 text-slate-300">
+                <div><span class="text-amber-400">Focus</span> <span class="text-slate-500">(β)</span></div>
+                <span id="focus-val" class="tabular-nums font-mono text-slate-400">50</span>
+              </div>
+              <input type="range" id="focus-slider" min="0" max="100" value="50" 
+                     class="w-full accent-amber-400" oninput="updateSimulatorFromSliders()">
+            </div>
+            <div>
+              <div class="flex justify-between mb-1 px-0.5 text-slate-300">
+                <div><span class="text-violet-400">Calm</span> <span class="text-slate-500">(θ)</span></div>
+                <span id="calm-val" class="tabular-nums font-mono text-slate-400">35</span>
+              </div>
+              <input type="range" id="calm-slider" min="0" max="100" value="35" 
+                     class="w-full accent-violet-400" oninput="updateSimulatorFromSliders()">
+            </div>
+            <div>
+              <div class="flex justify-between mb-1 px-0.5 text-slate-300">
+                <div><span class="text-rose-400">Active</span> <span class="text-slate-500">(γ)</span></div>
+                <span id="active-val" class="tabular-nums font-mono text-slate-400">20</span>
+              </div>
+              <input type="range" id="active-slider" min="0" max="100" value="20" 
+                     class="w-full accent-rose-400" oninput="updateSimulatorFromSliders()">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Brain Waves Guide -->
+    <div class="mt-6">
+      <div class="flex items-baseline gap-x-3 mb-3 px-1">
+        <div class="font-semibold tracking-tight text-lg">Understanding Brain Waves</div>
+        <div class="text-xs text-slate-500">What the Muse headband is actually measuring</div>
+      </div>
+      
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div class="section-card rounded-2xl p-4 border border-slate-800">
+          <div class="flex items-center gap-x-2">
+            <div class="w-3 h-3 rounded-full" style="background:#6474ff"></div>
+            <div class="font-semibold text-[#6474ff]">Delta • 0.5–4 Hz</div>
+          </div>
+          <div class="mt-2 text-xs text-slate-300 leading-snug">Deep restoration, sleep, unconscious processing. Strong delta during meditation can indicate profound relaxation or drowsiness.</div>
+        </div>
+        
+        <div class="section-card rounded-2xl p-4 border border-slate-800">
+          <div class="flex items-center gap-x-2">
+            <div class="w-3 h-3 rounded-full" style="background:#a78bfa"></div>
+            <div class="font-semibold text-[#a78bfa]">Theta • 4–8 Hz</div>
+          </div>
+          <div class="mt-2 text-xs text-slate-300 leading-snug">Creativity, intuition, light meditation, memory. Many experienced meditators show elevated theta during deep practice.</div>
+        </div>
+        
+        <div class="section-card rounded-2xl p-4 border border-slate-800">
+          <div class="flex items-center gap-x-2">
+            <div class="w-3 h-3 rounded-full" style="background:#34d399"></div>
+            <div class="font-semibold text-[#34d399]">Alpha • 8–13 Hz</div>
+          </div>
+          <div class="mt-2 text-xs text-slate-300 leading-snug">The signature “calm focus” band. Relaxed but alert wakefulness. Muse was designed around training higher, more stable alpha.</div>
+        </div>
+        
+        <div class="section-card rounded-2xl p-4 border border-slate-800">
+          <div class="flex items-center gap-x-2">
+            <div class="w-3 h-3 rounded-full" style="background:#fbbf24"></div>
+            <div class="font-semibold text-[#fbbf24]">Beta • 13–30 Hz</div>
+          </div>
+          <div class="mt-2 text-xs text-slate-300 leading-snug">Active thinking, concentration, problem solving — but also anxiety and rumination when excessive. Lower beta = quieter mind.</div>
+        </div>
+        
+        <div class="section-card rounded-2xl p-4 border border-slate-800">
+          <div class="flex items-center gap-x-2">
+            <div class="w-3 h-3 rounded-full" style="background:#f87171"></div>
+            <div class="font-semibold text-[#f87171]">Gamma • 30–50+ Hz</div>
+          </div>
+          <div class="mt-2 text-xs text-slate-300 leading-snug">High-level cognition, insight, “eureka” moments, and cross-brain integration. Rare but very rewarding when it appears during meditation.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real Hardware Notice -->
+    <div class="mt-6 rounded-3xl border border-slate-800 bg-slate-950 p-4 text-xs">
+      <div class="flex flex-col md:flex-row md:items-center gap-3">
+        <div class="flex-1">
+          <span class="font-semibold text-indigo-300">Real Muse support is built-in.</span>
+          <span class="text-slate-400"> Click <span class="font-medium text-indigo-300">"Connect Real Muse"</span> above to pair directly with a Muse 2 or Muse S over Web Bluetooth. The same beautiful visualizations, spectrogram, mental state, recording, and audio feedback all work with live data. For more advanced use (React, better error handling, PPG, etc.), the </span>
+          <a href="https://github.com/itayinbarr/web-muse" target="_blank" class="text-cyan-400 hover:underline">web-muse</a>
+          <span class="text-slate-400"> library is excellent.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+  <script>
+    // ==================== CONFIG & STATE ====================
+    const SAMPLE_RATE = 256;
+    const CHANNELS = ['TP9', 'AF7', 'AF8', 'TP10'];
+    const CHANNEL_COLORS = ['#22d3ee', '#a78bfa', '#f472b6', '#fb923c']; // cyan, violet, pink, orange
+
+    // ===== Real Muse Headset Web Bluetooth Protocol =====
+    const MUSE_SERVICE = 0xfe8d;
+    const CONTROL_CHAR = '273e0001-4c4d-454d-96be-f03bac821358';
+    const BASE_EEG_CHARS = [
+      '273e0003-4c4d-454d-96be-f03bac821358', // TP9
+      '273e0004-4c4d-454d-96be-f03bac821358', // AF7
+      '273e0005-4c4d-454d-96be-f03bac821358', // AF8
+      '273e0006-4c4d-454d-96be-f03bac821358'  // TP10
+    ];
+    const AUX_CHAR = '273e0007-4c4d-454d-96be-f03bac821358'; // Auxiliary probe (when enableAux = true)
+    const GYROSCOPE_CHAR = '273e0009-4c4d-454d-96be-f03bac821358';
+    const ACCELEROMETER_CHAR = '273e000a-4c4d-454d-96be-f03bac821358';
+
+    let realDevice = null;
+    let realGATT = null;
+    let realControlChar = null;
+    let realEEGChars = [];
+    let isRealDevice = false;
+    let realSampleCount = 0;
+
+    // AUX probe support
+    let auxEnabled = false;   // controlled by UI checkbox, read at connect time
+    let currentChannelCount = 4;
+    let lastWasReal = false;  // remembers if we last connected via real Bluetooth (for auto-reconnect on AUX change)
+
+    // Gyroscope / Head position state
+    let gyro = { x: 0, y: 0, z: 0 };           // current angular velocity (deg/s)
+    let orientation = { pitch: 0, roll: 0, yaw: 0 }; // estimated degrees (integrated + filtered)
+    let gyroAvailable = false;
+    let lastGyroTimestamp = Date.now();
+
+    // Blink detection state
+    let isBlinking = false;
+    let lastBlinkTime = 0;
+    let blinkThreshold = 95; // µV sudden change threshold for frontal channels
+    let frontalHistory = []; // short history for blink detection
+
+    // Muse 12-bit EEG decoder (from official muse-js / web-muse)
+    function decodeUnsigned12BitData(samples) {
+      const out = [];
+      for (let i = 0; i < samples.length; i++) {
+        if (i % 3 === 0) {
+          out.push((samples[i] << 4) | (samples[i + 1] >> 4));
+        } else {
+          out.push(((samples[i] & 0x0f) << 8) | samples[i + 1]);
+          i++;
+        }
+      }
+      return out;
+    }
+
+    function decodeEEGSamples(samples) {
+      // Convert 12-bit packed → microvolts (same scaling as muse-js)
+      return decodeUnsigned12BitData(samples).map(n => 0.48828125 * (n - 0x800));
+    }
+
+    // Dynamic channel helpers (supports AUX probe)
+    function getChannelNames() {
+      return auxEnabled ? ['TP9', 'AF7', 'AF8', 'TP10', 'AUX'] : ['TP9', 'AF7', 'AF8', 'TP10'];
+    }
+
+    function getChannelColors() {
+      return auxEnabled 
+        ? ['#22d3ee', '#a78bfa', '#f472b6', '#fb923c', '#4ade80']   // AUX = bright green
+        : ['#22d3ee', '#a78bfa', '#f472b6', '#fb923c'];
+    }
+
+    function getEEGCharacteristics() {
+      const base = [...BASE_EEG_CHARS];
+      return auxEnabled ? [...base, AUX_CHAR] : base;
+    }
+
+    function getActiveChannelCount() {
+      return auxEnabled ? 5 : 4;
+    }
+
+    // ===== Gyro / IMU parsing (ported from muse-js) =====
+    function parseImuReading(dataView, scale) {
+      const sample = (start) => ({
+        x: scale * dataView.getInt16(start),
+        y: scale * dataView.getInt16(start + 2),
+        z: scale * dataView.getInt16(start + 4),
+      });
+
+      return {
+        sequenceId: dataView.getUint16(0, true),
+        samples: [sample(2), sample(8), sample(14)],
+      };
+    }
+
+    function parseGyroscope(dataView) {
+      // scale from muse-js
+      return parseImuReading(dataView, 0.0074768);
+    }
+
+    function parseAccelerometer(dataView) {
+      return parseImuReading(dataView, 0.0000610352);
+    }
+    
+    const BANDS = [
+      { key: 'delta', label: 'Delta', min: 0.5, max: 4.0,  color: '#6474ff' },
+      { key: 'theta', label: 'Theta', min: 4.0, max: 8.0,  color: '#a78bfa' },
+      { key: 'alpha', label: 'Alpha', min: 8.0, max: 13.0, color: '#34d399' },
+      { key: 'beta',  label: 'Beta',  min: 13.0, max: 30.0, color: '#fbbf24' },
+      { key: 'gamma', label: 'Gamma', min: 30.0, max: 50.0, color: '#f87171' }
+    ];
+
+    let isRunning = false;
+    let startTime = 0;
+    let sessionTimer = null;
+    let recordedData = [];
+    let isRecording = false;
+
+    // Per-channel ring buffers (keep ~4 seconds)
+    const BUFFER_SIZE = SAMPLE_RATE * 4;
+    let eegBuffers = [[], [], [], [], []];   // supports up to 5 (with AUX)
+    let sampleCounter = 0;
+
+    // Band powers (smoothed)
+    let currentBandPowers = { delta: 0, theta: 0, alpha: 0, beta: 0, gamma: 0 };
+    let smoothedBandPowers = { delta: 0, theta: 0, alpha: 0, beta: 0, gamma: 0 };
+
+    // Spectrogram for brain waves (scrolling heatmap)
+    // Each column is an array of power values from low to high frequency
+    let spectrogram = [];          // ring of columns (newest on right)
+    const SPEC_COLS = 138;         // ~18 seconds of history at ~130ms per column
+    const FREQ_BINS = 29;          // ~2 Hz resolution from 1–57 Hz
+    const SPEC_MIN_HZ = 1;
+    const SPEC_MAX_HZ = 57;
+
+    // Simulator parameters (controlled by sliders + internal dynamics)
+    let simParams = {
+      relax: 50,   // alpha boost
+      focus: 50,   // beta boost
+      calm: 35,    // theta
+      active: 20   // gamma
+    };
+
+    // Audio
+    let audioCtx = null;
+    let sonificationEnabled = false;
+    let oscillators = [];
+    let masterGain = null;
+    let noiseNode = null;
+    let noiseFilter = null;
+
+    // ==================== WAVEFORM CANVASES ====================
+    function createWaveformCanvases() {
+      const container = document.getElementById('waveform-container');
+      container.innerHTML = '';
+
+      const names = getChannelNames();
+      const colors = getChannelColors();
+
+      names.forEach((name, idx) => {
+        const row = document.createElement('div');
+        row.className = `flex items-center gap-3 group`;
+        
+        row.innerHTML = `
+          <div class="w-[54px] flex-shrink-0">
+            <div class="flex items-center gap-x-2">
+              <div style="color: ${colors[idx]}" class="font-semibold text-xs tracking-[1.5px]">${name}</div>
+            </div>
+            <div class="text-[9px] text-slate-500 mt-px">μV</div>
+          </div>
+          
+          <div class="flex-1 relative">
+            <canvas id="wave-${idx}" width="720" height="52" 
+                    class="wave-canvas w-full h-[52px] cursor-crosshair"></canvas>
+            <div class="absolute top-1 right-2 text-[9px] px-1.5 rounded bg-black/40 text-slate-400 font-mono tabular-nums" id="wave-val-${idx}">
+              0.0
+            </div>
+          </div>
+        `;
+        
+        container.appendChild(row);
+        
+        // Add subtle hover interaction
+        const canvas = row.querySelector('canvas');
+        canvas.addEventListener('mousemove', (e) => {
+          if (!isRunning) return;
+          const rect = canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const progress = x / rect.width;
+          const buf = eegBuffers[idx];
+          if (buf.length > 10) {
+            const sampleIdx = Math.floor(progress * Math.min(buf.length, 512));
+            const val = buf[buf.length - 1 - sampleIdx] || 0;
+            document.getElementById(`wave-val-${idx}`).textContent = val.toFixed(1);
+          }
+        });
+      });
+    }
+
+    function drawWaveforms() {
+      if (!isRunning) return;
+
+      const names = getChannelNames();
+      names.forEach((name, ch) => {
+        const canvas = document.getElementById(`wave-${ch}`);
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d', { alpha: true });
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        ctx.clearRect(0, 0, w, h);
+        
+        const buf = eegBuffers[ch];
+        if (buf.length < 2) return;
+        
+        // Visible window: last ~1.6 seconds (~410 samples)
+        const visibleSamples = Math.min(410, buf.length);
+        const startIdx = buf.length - visibleSamples;
+        
+        // Scale
+        let maxAmp = 1;
+        for (let i = startIdx; i < buf.length; i++) {
+          maxAmp = Math.max(maxAmp, Math.abs(buf[i]));
+        }
+        const scale = (h * 0.42) / Math.max(maxAmp, 12);
+        
+        // Grid
+        ctx.strokeStyle = 'rgba(31,37,55,0.7)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let y = 0.25; y < 0.85; y += 0.25) {
+          const yy = Math.round(h * y) + 0.5;
+          ctx.moveTo(0, yy);
+          ctx.lineTo(w, yy);
+        }
+        ctx.stroke();
+        
+        // Zero line
+        ctx.strokeStyle = 'rgba(148,163,184,0.12)';
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.5);
+        ctx.lineTo(w, h * 0.5);
+        ctx.stroke();
+        
+        // Waveform
+        ctx.strokeStyle = CHANNEL_COLORS[ch];
+        ctx.lineWidth = 1.75;
+        ctx.shadowColor = CHANNEL_COLORS[ch] + '55';
+        ctx.shadowBlur = 3;
+        
+        ctx.beginPath();
+        
+        for (let i = 0; i < visibleSamples; i++) {
+          const x = (i / (visibleSamples - 1)) * w;
+          const y = h * 0.5 - (buf[startIdx + i] * scale);
+          
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        
+        // Update instantaneous value label
+        const latest = buf[buf.length - 1] || 0;
+        const valEl = document.getElementById(`wave-val-${ch}`);
+        if (valEl) valEl.textContent = latest.toFixed(1);
+      });
+    }
+
+    // ==================== BAND POWER UI ====================
+    function createBandPowerUI() {
+      const container = document.getElementById('band-powers');
+      container.innerHTML = '';
+      
+      BANDS.forEach((band) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-3';
+        row.innerHTML = `
+          <div class="w-[52px] flex-shrink-0">
+            <div style="color: ${band.color}" class="font-semibold text-sm tracking-wider">${band.label}</div>
+            <div class="text-[10px] text-slate-500 font-mono tabular-nums">${band.min.toFixed(1)}–${band.max}</div>
+          </div>
+          
+          <div class="flex-1 relative h-2.5 bg-slate-950 border border-slate-800 rounded-full overflow-hidden">
+            <div id="bar-${band.key}" 
+                 class="band-bar absolute left-0 top-0 h-full rounded-full"
+                 style="width: 12%; background: ${band.color};"></div>
+          </div>
+          
+          <div class="w-9 text-right">
+            <span id="pct-${band.key}" class="font-semibold tabular-nums text-sm" style="color: ${band.color}">12</span>
+            <span class="text-[9px] text-slate-500">%</span>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function updateBandPowersUI(powers) {
+      const total = Object.values(powers).reduce((a, b) => a + Math.max(b, 0.0001), 0);
+      
+      BANDS.forEach((band) => {
+        const pct = Math.round((powers[band.key] / total) * 100);
+        const bar = document.getElementById(`bar-${band.key}`);
+        const pctEl = document.getElementById(`pct-${band.key}`);
+        
+        if (bar) bar.style.width = Math.max(pct, 4) + '%';
+        if (pctEl) pctEl.textContent = pct;
+      });
+      
+      // Update quick % in mental state card
+      document.getElementById('alpha-pct').textContent = Math.round((powers.alpha / total) * 100);
+      document.getElementById('beta-pct').textContent  = Math.round((powers.beta  / total) * 100);
+      document.getElementById('theta-pct').textContent = Math.round((powers.theta / total) * 100);
+      document.getElementById('delta-pct').textContent = Math.round((powers.delta / total) * 100);
+      document.getElementById('gamma-pct').textContent = Math.round((powers.gamma / total) * 100);
+    }
+
+    // ==================== MENTAL STATE ENGINE ====================
+    function computeMentalState(powers) {
+      const total = Object.values(powers).reduce((a, b) => a + b, 0) || 1;
+      const alphaR = powers.alpha / total;
+      const betaR  = powers.beta  / total;
+      const thetaR = powers.theta / total;
+      const deltaR = powers.delta / total;
+      const gammaR = powers.gamma / total;
+      
+      // Classic neurofeedback ratios
+      const calmRatio = (alphaR + thetaR * 0.6) / (betaR + 0.03);   // high = calm
+      const focusRatio = (betaR * 1.2) / (alphaR + 0.04);          // high = focused
+      const activeRatio = (gammaR + betaR * 0.6) / (alphaR + 0.05);
+      
+      let state = { label: 'Neutral', desc: 'Balanced brain activity', icon: 'fa-balance-scale', score: 55 };
+      
+      if (calmRatio > 1.9 && thetaR > 0.14) {
+        state = { label: 'Deep Calm', desc: 'Strong alpha + theta • meditative', icon: 'fa-spa', score: 92 };
+      } else if (calmRatio > 1.35) {
+        state = { label: 'Relaxed', desc: 'Elevated alpha • calm awareness', icon: 'fa-leaf', score: 78 };
+      } else if (focusRatio > 1.15 && betaR > 0.18) {
+        state = { label: 'Focused', desc: 'Beta dominant • engaged attention', icon: 'fa-bullseye', score: 74 };
+      } else if (activeRatio > 0.95) {
+        state = { label: 'Active', desc: 'High-frequency energy • alert', icon: 'fa-bolt', score: 61 };
+      } else if (deltaR > 0.38) {
+        state = { label: 'Drowsy', desc: 'Delta dominant • low arousal', icon: 'fa-bed', score: 38 };
+      }
+      
+      // Meditation score (0-100) — smoothed calm + low beta + decent alpha
+      const meditation = Math.max(20, Math.min(98, 
+        Math.round( (calmRatio * 22) + (alphaR * 55) - (betaR * 18) + 30 )
+      ));
+      
+      return { ...state, meditation };
+    }
+
+    function updateMentalStateUI(stateInfo) {
+      const card = document.getElementById('mental-state-card');
+      const label = document.getElementById('mental-state-label');
+      const desc = document.getElementById('mental-state-desc');
+      const icon = document.getElementById('mental-state-icon');
+      const scoreEl = document.getElementById('meditation-score');
+      
+      label.textContent = stateInfo.label;
+      desc.textContent = stateInfo.desc;
+      icon.className = `fa-solid ${stateInfo.icon} text-3xl`;
+      
+      // Color tint the card based on state
+      if (stateInfo.label.includes('Calm') || stateInfo.label === 'Relaxed') {
+        card.style.borderColor = '#16653433';
+        card.style.background = '#052e16';
+        icon.style.color = '#4ade80';
+      } else if (stateInfo.label === 'Focused') {
+        card.style.borderColor = '#854d0e33';
+        card.style.background = '#431407';
+        icon.style.color = '#fbbf24';
+      } else if (stateInfo.label === 'Active') {
+        card.style.borderColor = '#7f1d1d33';
+        card.style.background = '#450a0a';
+        icon.style.color = '#f87171';
+      } else {
+        card.style.borderColor = '#1f2537';
+        card.style.background = '#0b0d15';
+        icon.style.color = '#67e8f9';
+      }
+      
+      scoreEl.textContent = stateInfo.meditation;
+    }
+
+    // ==================== SIMPLE GOERTZEL BAND POWER ANALYSIS ====================
+    function goertzelPower(samples, freq, sampleRate) {
+      // Goertzel algorithm for a single frequency bin power
+      const n = samples.length;
+      const omega = 2 * Math.PI * freq / sampleRate;
+      const coeff = 2 * Math.cos(omega);
+      
+      let s1 = 0, s2 = 0;
+      
+      for (let i = 0; i < n; i++) {
+        const s0 = samples[i] + coeff * s1 - s2;
+        s2 = s1;
+        s1 = s0;
+      }
+      
+      const power = s1 * s1 + s2 * s2 - coeff * s1 * s2;
+      return Math.max(0, power / (n * n));
+    }
+
+    function analyzeBandsFromBuffer(samples) {
+      if (samples.length < 64) return { delta: 0.2, theta: 0.2, alpha: 0.2, beta: 0.2, gamma: 0.2 };
+      
+      // Use last 512 samples (~2s)
+      const n = Math.min(512, samples.length);
+      const window = samples.slice(samples.length - n);
+      
+      // Hann window for better frequency resolution
+      const windowed = window.map((v, i) => {
+        const w = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (n - 1)));
+        return v * w;
+      });
+      
+      // Representative frequencies per band
+      const bandFreqs = {
+        delta: [1.2, 2.5, 3.5],
+        theta: [5.0, 6.2, 7.4],
+        alpha: [9.0, 10.3, 11.8],
+        beta:  [15, 19, 24, 27],
+        gamma: [33, 38, 44, 48]
+      };
+      
+      const powers = {};
+      
+      BANDS.forEach(band => {
+        let sum = 0;
+        const freqs = bandFreqs[band.key];
+        freqs.forEach(f => {
+          sum += goertzelPower(windowed, f, SAMPLE_RATE);
+        });
+        powers[band.key] = Math.sqrt(sum / freqs.length) * 0.8; // scale to nice numbers
+      });
+      
+      // Add a little baseline + noise so it never goes completely silent
+      Object.keys(powers).forEach(k => {
+        powers[k] = Math.max(0.01, powers[k]);
+      });
+      
+      return powers;
+    }
+
+    function computeSpectrogramColumn() {
+      // Compute a full frequency column for the spectrogram using Goertzel on averaged signal
+      // Use the two frontal channels (AF7 + AF8) as they are most sensitive for brain waves
+      const buf1 = eegBuffers[1];
+      const buf2 = eegBuffers[2];
+      if (buf1.length < 200 || buf2.length < 200) return null;
+
+      const n = Math.min(480, buf1.length, buf2.length);
+      const start = buf1.length - n;
+
+      // Average the two frontal channels for cleaner brain signal
+      const combined = new Array(n);
+      for (let i = 0; i < n; i++) {
+        combined[i] = (buf1[start + i] + buf2[start + i]) * 0.5;
+      }
+
+      // Apply Hann window
+      const windowed = combined.map((v, i) => {
+        const w = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (n - 1)));
+        return v * w;
+      });
+
+      const column = new Array(FREQ_BINS);
+      const df = (SPEC_MAX_HZ - SPEC_MIN_HZ) / (FREQ_BINS - 1);
+
+      let maxPower = 0.0001;
+      for (let b = 0; b < FREQ_BINS; b++) {
+        const freq = SPEC_MIN_HZ + b * df;
+        // Use a few nearby frequencies and average for robustness
+        let p = 0;
+        p += goertzelPower(windowed, freq, SAMPLE_RATE);
+        p += goertzelPower(windowed, freq + 0.7, SAMPLE_RATE) * 0.6;
+        p += goertzelPower(windowed, freq - 0.6, SAMPLE_RATE) * 0.5;
+        const val = Math.sqrt(p / 2.1);
+        column[b] = val;
+        if (val > maxPower) maxPower = val;
+      }
+
+      // Normalize column relative to its own max (good for visualization)
+      if (maxPower > 0.0001) {
+        for (let b = 0; b < FREQ_BINS; b++) {
+          column[b] = Math.min(1, column[b] / (maxPower * 0.92));
+        }
+      }
+      return column;
+    }
+
+    function pushSpectrogramColumn(column) {
+      if (!column) return;
+      spectrogram.push(column);
+      if (spectrogram.length > SPEC_COLS) {
+        spectrogram.shift();
+      }
+    }
+
+    function smoothBands(newPowers) {
+      const alpha = 0.22; // smoothing factor
+      Object.keys(newPowers).forEach(k => {
+        smoothedBandPowers[k] = smoothedBandPowers[k] * (1 - alpha) + newPowers[k] * alpha;
+      });
+      return { ...smoothedBandPowers };
+    }
+
+    // ==================== EEG SIMULATOR ====================
+    let phase = [0, 0, 0, 0];
+    let noisePhase = 0;
+
+    function generateNextSample(ch, t) {
+      // Base amplitudes from sliders (0-100 → amplitude)
+      const relax = (simParams.relax / 100) * 6.2;
+      const focus = (simParams.focus / 100) * 4.8;
+      const calm  = (simParams.calm / 100) * 5.5;
+      const active = (simParams.active / 100) * 2.9;
+      
+      // Channel-specific bias (different regions pick up different activity)
+      const chBiasList = [
+        [0.95, 1.0, 0.85, 1.1], // TP9
+        [1.05, 0.9, 1.15, 0.85], // AF7
+        [1.0, 0.95, 1.1, 0.95],  // AF8
+        [0.92, 1.05, 0.9, 1.15], // TP10
+        [0.7, 0.8, 0.75, 1.4]    // AUX probe (often more variable / different placement)
+      ];
+      const chBias = chBiasList[Math.min(ch, chBiasList.length - 1)];
+      
+      let s = 0;
+      
+      // Delta (slow)
+      s += Math.sin(t * 1.8) * 4.5 * chBias[0] * (0.6 + calm * 0.07);
+      
+      // Theta
+      s += Math.sin(t * 5.4 + phase[ch] * 0.3) * 3.2 * chBias[1] * (0.5 + calm * 0.09);
+      
+      // Alpha (main rhythm, slightly different per channel)
+      const alphaFreq = 9.8 + (ch - 1.5) * 0.3;
+      s += Math.sin(t * alphaFreq) * relax * chBias[2];
+      
+      // Beta bursts
+      s += Math.sin(t * 17.5) * focus * chBias[3] * 0.7;
+      s += Math.sin(t * 22 + phase[ch]) * focus * 0.55;
+      
+      // Gamma
+      s += Math.sin(t * 37) * active * 0.9;
+      
+      // 1/f-ish noise + muscle artifact bursts (occasional)
+      noisePhase += 0.31;
+      const pink = Math.sin(noisePhase * 0.6) * 1.3 + Math.sin(noisePhase * 1.7) * 0.6;
+      s += pink * (0.7 + (simParams.active - 40) * 0.008);
+      
+      // Occasional blink / muscle artifact on frontal channels (AF7/AF8)
+      if ((ch === 1 || ch === 2) && Math.sin(t * 0.4) > 0.96) {
+        s += (Math.random() - 0.5) * 18;
+      }
+      
+      // Small random jitter
+      s += (Math.random() - 0.5) * 1.1;
+      
+      // Phase drift
+      phase[ch] = (phase[ch] + 0.006) % (Math.PI * 2);
+      
+      return s;
+    }
+
+    function pushNewSamples(count = 4) {
+      if (!isRunning) return;
+      
+      const tBase = Date.now() / 1000 * 0.92; // global time base
+      
+      for (let i = 0; i < count; i++) {
+        const t = tBase + sampleCounter * 0.0039;
+        
+        const nCh = getActiveChannelCount();
+        for (let ch = 0; ch < nCh; ch++) {
+          const sample = generateNextSample(ch, t);
+          const buf = eegBuffers[ch];
+          buf.push(sample);
+          if (buf.length > BUFFER_SIZE) buf.shift();
+        }
+        
+        // Record if active
+        if (isRecording) {
+          const names = getChannelNames();
+          const recordRow = { t: (Date.now() - startTime) / 1000 };
+          names.forEach((name, i) => {
+            recordRow[name] = eegBuffers[i][eegBuffers[i].length - 1] ?? 0;
+          });
+          recordedData.push(recordRow);
+          // Prevent runaway memory
+          if (recordedData.length > 20000) recordedData.shift();
+        }
+        
+        sampleCounter++;
+      }
+      
+      // Update counters
+      document.getElementById('sample-count').textContent = sampleCounter.toLocaleString();
+    }
+
+    function updateAnalysis() {
+      if (!isRunning) return;
+      
+      // Average the 4 channels for global band powers (typical for simple monitors)
+      let avgPowers = { delta: 0, theta: 0, alpha: 0, beta: 0, gamma: 0 };
+      
+      // Average the primary EEG channels (first 4). AUX is often a separate probe (EMG/ECG etc.)
+      const nForAnalysis = Math.min(4, eegBuffers.length);
+      for (let ch = 0; ch < nForAnalysis; ch++) {
+        const buf = eegBuffers[ch];
+        if (buf.length < 128) continue;
+        const p = analyzeBandsFromBuffer(buf);
+        Object.keys(avgPowers).forEach(k => avgPowers[k] += p[k]);
+      }
+      
+      Object.keys(avgPowers).forEach(k => avgPowers[k] /= nForAnalysis);
+      
+      // Blend with slider bias only in demo mode
+      if (!isRealDevice) {
+        const bias = {
+          delta: (simParams.calm / 100) * 1.6 + 0.3,
+          theta: (simParams.calm / 100) * 1.4 + 0.25,
+          alpha: (simParams.relax / 100) * 3.2 + 0.6,
+          beta:  (simParams.focus / 100) * 2.9 + 0.5,
+          gamma: (simParams.active / 100) * 2.1 + 0.3
+        };
+        
+        Object.keys(avgPowers).forEach(k => {
+          avgPowers[k] = avgPowers[k] * 0.6 + bias[k] * 0.9;
+        });
+      }
+      
+      currentBandPowers = smoothBands(avgPowers);
+      
+      updateBandPowersUI(currentBandPowers);
+      
+      // Mental state
+      const state = computeMentalState(currentBandPowers);
+      updateMentalStateUI(state);
+      
+      // Average alpha display
+      const avgAlpha = (currentBandPowers.alpha * 1.8).toFixed(1);
+      document.getElementById('avg-alpha').innerHTML = avgAlpha + ' <span class="text-xs text-slate-400">μV²</span>';
+      
+      // Brain wave spectrogram (throttled)
+      if (!window._lastSpecTime || (Date.now() - window._lastSpecTime) > 128) {
+        const col = computeSpectrogramColumn();
+        pushSpectrogramColumn(col);
+        window._lastSpecTime = Date.now();
+      }
+      
+      // Update spectrum / spectrogram
+      drawSpectrum();
+    }
+
+    // ==================== BRAIN WAVE SPECTROGRAM ====================
+
+    function drawSpectrum() {
+      const canvas = document.getElementById('spectrum-canvas');
+      const ctx = canvas.getContext('2d', { alpha: true });
+      const w = canvas.width;
+      const h = canvas.height;
+      
+      ctx.fillStyle = '#0b0d15';
+      ctx.fillRect(0, 0, w, h);
+      
+      // Subtle horizontal frequency grid lines
+      ctx.strokeStyle = 'rgba(31,37,55,0.55)';
+      ctx.lineWidth = 1;
+      for (let y = 0; y < h; y += Math.floor(h / 5)) {
+        ctx.beginPath();
+        ctx.moveTo(0, y + 0.5);
+        ctx.lineTo(w, y + 0.5);
+        ctx.stroke();
+      }
+      
+      if (!isRunning || spectrogram.length < 2) {
+        ctx.fillStyle = '#475569';
+        ctx.font = '12px Inter, system-ui, sans-serif';
+        ctx.fillText('Brain waves will appear here — click Start Brain Wave Monitor', 28, h / 2 + 3);
+        return;
+      }
+      
+      const colW = w / SPEC_COLS;
+      const binH = h / FREQ_BINS;
+      
+      // Draw the scrolling spectrogram heatmap
+      for (let c = 0; c < spectrogram.length; c++) {
+        const column = spectrogram[c];
+        const x = Math.floor(c * colW);
+        
+        for (let b = 0; b < FREQ_BINS; b++) {
+          const power = column[b] || 0;
+          const y = Math.floor(h - (b + 1) * binH);
+          
+          // Beautiful EEG-style colormap: deep blue → teal → lime → yellow → white
+          let r, g, bcol;
+          if (power < 0.18) {
+            const t = power / 0.18;
+            r = 8 + t * 18; g = 20 + t * 85; bcol = 55 + t * 90;
+          } else if (power < 0.42) {
+            const t = (power - 0.18) / 0.24;
+            r = 26 + t * 30; g = 105 + t * 95; bcol = 145 - t * 40;
+          } else if (power < 0.68) {
+            const t = (power - 0.42) / 0.26;
+            r = 56 + t * 140; g = 200 - t * 30; bcol = 105 - t * 85;
+          } else {
+            const t = Math.min(1, (power - 0.68) / 0.32);
+            r = 196 + t * 59; g = 170 + t * 80; bcol = 20 + t * 40;
+          }
+          
+          ctx.fillStyle = `rgb(${Math.floor(r)},${Math.floor(g)},${Math.floor(bcol)})`;
+          ctx.fillRect(x, y, Math.ceil(colW + 0.6), Math.ceil(binH + 0.4));
+        }
+      }
+      
+      // Subtle time markers
+      ctx.strokeStyle = 'rgba(148,163,184,0.15)';
+      ctx.lineWidth = 1;
+      const markerEvery = Math.floor(SPEC_COLS / 6);
+      for (let c = markerEvery; c < spectrogram.length; c += markerEvery) {
+        const x = Math.floor(c * colW);
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      
+      // Current alpha "ridge" highlight (very common in Muse visualizations)
+      if (spectrogram.length > 0) {
+        const latest = spectrogram[spectrogram.length - 1];
+        // Alpha is roughly bins 4-8 in our 1-57 Hz range
+        ctx.strokeStyle = 'rgba(52, 211, 153, 0.7)';
+        ctx.lineWidth = 1.75;
+        ctx.beginPath();
+        let started = false;
+        for (let b = 3; b <= 9; b++) {
+          const power = latest[b] || 0;
+          const y = h - (b + 0.5) * binH;
+          const x = w - colW * 0.6;
+          if (!started) { ctx.moveTo(x, y); started = true; }
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+    }
+
+    // ==================== MAIN LOOP ====================
+    let lastAnalysisTime = 0;
+    let lastDrawTime = 0;
+
+    function mainLoop() {
+      if (!isRunning) return;
+      
+      const now = Date.now();
+      
+      // Generate new samples only in demo mode
+      if (!isRealDevice) {
+        pushNewSamples(5);
+        simulateHeadMovement();   // fake gentle head motion for demo
+        simulateBlinkInDemo();    // occasional blinks in demo
+      } else {
+        // In real mode, check for blinks from frontal EEG
+        checkForBlink();
+      }
+      
+      // Redraw waveforms ~40fps
+      if (now - lastDrawTime > 24) {
+        drawWaveforms();
+        lastDrawTime = now;
+      }
+      
+      // Full analysis + spectrum + mental state ~6-8 times per second
+      if (now - lastAnalysisTime > 135) {
+        updateAnalysis();
+        lastAnalysisTime = now;
+      }
+      
+      // Update sonification
+      if (sonificationEnabled) updateSonification();
+      
+      // Occasionally update session timer
+      if (sessionTimer) {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const s = String(elapsed % 60).padStart(2, '0');
+        document.getElementById('session-time').textContent = `${m}:${s}`;
+      }
+      
+      requestAnimationFrame(mainLoop);
+    }
+
+    // ==================== SLIDERS ====================
+    function updateSimulatorFromSliders() {
+      simParams.relax = parseInt(document.getElementById('relax-slider').value);
+      simParams.focus  = parseInt(document.getElementById('focus-slider').value);
+      simParams.calm   = parseInt(document.getElementById('calm-slider').value);
+      simParams.active = parseInt(document.getElementById('active-slider').value);
+      
+      // Live labels
+      document.getElementById('relax-val').textContent = simParams.relax;
+      document.getElementById('focus-val').textContent = simParams.focus;
+      document.getElementById('calm-val').textContent = simParams.calm;
+      document.getElementById('active-val').textContent = simParams.active;
+    }
+
+    function resetSliders() {
+      document.getElementById('relax-slider').value = 50;
+      document.getElementById('focus-slider').value = 50;
+      document.getElementById('calm-slider').value = 35;
+      document.getElementById('active-slider').value = 20;
+      updateSimulatorFromSliders();
+    }
+
+    // ==================== AUDIO SONIFICATION ====================
+    function initAudio() {
+      if (audioCtx) return;
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = 0.06;
+        masterGain.connect(audioCtx.destination);
+        
+        // Gentle noise layer (for texture)
+        noiseNode = audioCtx.createBufferSource();
+        const bufferSize = 2 * audioCtx.sampleRate;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        noiseNode.buffer = buffer;
+        noiseNode.loop = true;
+        
+        noiseFilter = audioCtx.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.value = 420;
+        noiseFilter.Q.value = 1.6;
+        
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.value = 0.015;
+        
+        noiseNode.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(masterGain);
+        
+        // We'll create oscillators on demand
+      } catch (e) {
+        console.warn('Web Audio API unavailable');
+      }
+    }
+
+    function toggleSonification() {
+      sonificationEnabled = !sonificationEnabled;
+      const btn = document.getElementById('audio-btn');
+      
+      if (sonificationEnabled) {
+        initAudio();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        
+        // Create 3 soft oscillators mapped to alpha / theta / (beta+gamma)
+        if (oscillators.length === 0) {
+          const freqs = [178, 292, 520];
+          const types = ['sine', 'sine', 'sawtooth'];
+          
+          oscillators = freqs.map((f, i) => {
+            const osc = audioCtx.createOscillator();
+            osc.type = types[i];
+            osc.frequency.value = f;
+            
+            const gain = audioCtx.createGain();
+            gain.gain.value = i === 0 ? 0.7 : i === 1 ? 0.45 : 0.18;
+            
+            const filt = audioCtx.createBiquadFilter();
+            filt.type = 'lowpass';
+            filt.frequency.value = 980;
+            
+            osc.connect(filt);
+            filt.connect(gain);
+            gain.connect(masterGain);
+            
+            osc.start();
+            return { osc, gain, filt };
+          });
+        }
+        
+        noiseNode.start();
+        btn.classList.add('!bg-emerald-900', '!border-emerald-700');
+        btn.querySelector('i').classList.replace('fa-volume-off', 'fa-volume-up');
+      } else {
+        if (oscillators.length) {
+          oscillators.forEach(o => {
+            try { o.gain.gain.value = 0; } catch(e){}
+          });
+        }
+        if (noiseNode) {
+          try { noiseNode.stop(); } catch(e){}
+          noiseNode = null;
+        }
+        oscillators = [];
+        btn.classList.remove('!bg-emerald-900', '!border-emerald-700');
+        btn.querySelector('i').classList.replace('fa-volume-up', 'fa-volume-off');
+      }
+    }
+
+    function updateSonification() {
+      if (!sonificationEnabled || !oscillators.length || !audioCtx) return;
+      
+      const total = Object.values(currentBandPowers).reduce((a, b) => a + b, 1);
+      const alphaN = currentBandPowers.alpha / total;
+      const thetaN = currentBandPowers.theta / total;
+      const betaN  = currentBandPowers.beta  / total;
+      
+      // Map to pitch + volume gently
+      try {
+        // osc0 = alpha driven (calm drone)
+        oscillators[0].osc.frequency.setTargetAtTime(162 + alphaN * 95, audioCtx.currentTime, 0.3);
+        oscillators[0].gain.gain.setTargetAtTime(0.65 + alphaN * 0.6, audioCtx.currentTime, 0.4);
+        
+        // osc1 = theta (deeper)
+        oscillators[1].osc.frequency.setTargetAtTime(268 + thetaN * 40, audioCtx.currentTime, 0.4);
+        oscillators[1].gain.gain.setTargetAtTime(0.4 + thetaN * 0.5, audioCtx.currentTime, 0.4);
+        
+        // osc2 = beta/gamma (higher shimmering)
+        const high = (betaN + currentBandPowers.gamma / total * 0.6);
+        oscillators[2].osc.frequency.setTargetAtTime(485 + high * 180, audioCtx.currentTime, 0.25);
+        oscillators[2].gain.gain.setTargetAtTime(0.1 + high * 0.55, audioCtx.currentTime, 0.3);
+        
+        // noise brightness follows gamma
+        if (noiseFilter) noiseFilter.frequency.setTargetAtTime(310 + currentBandPowers.gamma * 6, audioCtx.currentTime, 0.3);
+      } catch (e) {}
+    }
+
+    // ==================== CONNECTION / SESSION ====================
+    function connectDemo() {
+      if (isRunning && isRealDevice) {
+        // switch from real to demo
+        disconnect();
+        setTimeout(connectDemo, 180);
+        return;
+      }
+      if (isRunning) return;
+
+      // Read AUX setting at start of session
+      const auxCheck = document.getElementById('aux-toggle');
+      auxEnabled = auxCheck ? auxCheck.checked : false;
+      currentChannelCount = getActiveChannelCount();
+
+      // Recreate waveforms for current channels (4 or 5 with AUX)
+      createWaveformCanvases();
+      
+      isRunning = true;
+      startTime = Date.now();
+      sampleCounter = 0;
+      recordedData = [];
+      const n = getActiveChannelCount();
+      eegBuffers = Array.from({ length: n }, () => []);
+      smoothedBandPowers = { delta: 0.4, theta: 0.5, alpha: 1.2, beta: 0.6, gamma: 0.2 };
+      currentBandPowers = { ...smoothedBandPowers };
+
+      // Reset head position for clean demo start
+      orientation = { pitch: 0, roll: 0, yaw: 0 };
+      gyro = { x: 0, y: 0, z: 0 };
+      
+      // UI updates
+      document.getElementById('connect-demo-btn').classList.add('hidden');
+      document.getElementById('connect-real-btn').classList.add('hidden');
+      document.getElementById('disconnect-btn').classList.remove('hidden');
+      document.getElementById('disconnect-btn').classList.add('flex');
+
+      lastWasReal = false;
+      
+      const pill = document.getElementById('status-pill');
+      const text = document.getElementById('status-text');
+      pill.className = 'status-pill px-4 h-8 rounded-3xl border flex items-center gap-x-2 bg-emerald-950 border-emerald-800 text-emerald-300';
+      text.innerHTML = `<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span></span> BRAIN WAVES LIVE`;
+      
+      // Seed initial buffers with nice data
+      const nCh = getActiveChannelCount();
+      for (let i = 0; i < 380; i++) {
+        const t = i * 0.0039;
+        for (let ch = 0; ch < nCh; ch++) {
+          eegBuffers[ch].push(generateNextSample(ch, t));
+        }
+      }
+      
+      // Pre-seed the brain wave spectrogram so it looks alive immediately
+      spectrogram = [];
+      for (let s = 0; s < 26; s++) {
+        const col = computeSpectrogramColumn();
+        if (col) pushSpectrogramColumn(col);
+      }
+      
+      // Start loops
+      sessionTimer = setInterval(() => {}, 1000); // just to keep reference
+      document.getElementById('session-time').textContent = '00:00';
+      
+      // Kick off the main loop
+      mainLoop();
+      
+      // Initial analysis
+      setTimeout(() => {
+        updateAnalysis();
+        drawSpectrum();
+      }, 80);
+      
+      hideConnectionTroubleshooter();
+      updateAuxStatusLabel();
+      showToast('Demo started — adjust sliders to shape brain activity', 'success');
+    }
+
+    // ==================== REAL MUSE HEADSET CONNECTION ====================
+
+    async function sendMuseCommand(cmd) {
+      if (!realControlChar) return;
+      const encoded = new TextEncoder().encode(`X${cmd}\n`);
+      encoded[0] = encoded.length - 1; // length prefix
+      await realControlChar.writeValue(encoded);
+    }
+
+    function handleRealEEGData(channelIndex, dataView) {
+      if (!isRunning || !isRealDevice) return;
+
+      try {
+        const eventIndex = dataView.getUint16(0, true); // little-endian
+        const raw = new Uint8Array(dataView.buffer, 2);
+        const samplesUV = decodeEEGSamples(raw); // returns 12 numbers in µV
+
+        const buf = eegBuffers[channelIndex];
+        for (let i = 0; i < samplesUV.length; i++) {
+          buf.push(samplesUV[i]);
+          if (buf.length > BUFFER_SIZE) buf.shift();
+        }
+
+        realSampleCount += samplesUV.length;
+
+        // Update sample counter in UI occasionally
+        if (realSampleCount % 256 === 0) {
+          document.getElementById('sample-count').textContent = realSampleCount.toLocaleString();
+        }
+
+        // Check for blinks on frontal channels (AF7/AF8)
+        if (channelIndex === 1 || channelIndex === 2) {
+          checkForBlink();
+        }
+      } catch (e) {
+        console.warn('Real EEG decode error on ch', channelIndex, e);
+      }
+    }
+
+    function handleGyroData(dataView) {
+      if (!isRealDevice || !isRunning) return;
+
+      try {
+        const reading = parseGyroscope(dataView);
+
+        // Take the last sample in the packet (most recent)
+        const latest = reading.samples[reading.samples.length - 1];
+
+        // Convert from Muse units to deg/s (the scale already gives us rad-ish, convert)
+        const scaleToDeg = 180 / Math.PI;
+        gyro.x = latest.x * scaleToDeg;
+        gyro.y = latest.y * scaleToDeg;
+        gyro.z = latest.z * scaleToDeg;
+
+        // Simple integration for relative head orientation (with light filtering)
+        const now = Date.now();
+        const dt = Math.min((now - lastGyroTimestamp) / 1000, 0.1); // cap dt
+        lastGyroTimestamp = now;
+
+        // Integrate gyro into orientation (degrees)
+        const alpha = 0.96; // complementary filter strength (trust gyro more for short term)
+
+        orientation.pitch = alpha * (orientation.pitch + gyro.x * dt) + (1 - alpha) * orientation.pitch;
+        orientation.roll  = alpha * (orientation.roll  + gyro.y * dt) + (1 - alpha) * orientation.roll;
+        orientation.yaw   = alpha * (orientation.yaw   + gyro.z * dt) + (1 - alpha) * orientation.yaw;
+
+        // Clamp to reasonable human range
+        orientation.pitch = Math.max(-60, Math.min(60, orientation.pitch));
+        orientation.roll  = Math.max(-60, Math.min(60, orientation.roll));
+
+        // Update the visual panel
+        updateHeadPositionVisual();
+      } catch (e) {
+        console.warn('Gyro parse error', e);
+      }
+    }
+
+    function onRealDeviceDisconnect() {
+      console.log('Muse headband disconnected');
+      isRealDevice = false;
+      realDevice = null;
+      realGATT = null;
+      realControlChar = null;
+      realEEGChars = [];
+
+      if (isRunning) {
+        // gracefully fall back to demo mode or fully disconnect
+        disconnect();
+      }
+      showToast('Muse headband disconnected', 'warn');
+    }
+
+    async function connectRealMuse() {
+      if (!('bluetooth' in navigator)) {
+        showToast('Web Bluetooth not available in this browser. Use Chrome or Edge.', 'warn');
+        return;
+      }
+
+      // Quick availability check
+      try {
+        const availability = await navigator.bluetooth.getAvailability?.();
+        if (availability === false) {
+          showToast('Bluetooth is turned off or unavailable on this device.', 'warn');
+          showConnectionTroubleshooter('Bluetooth unavailable', 'Turn on Bluetooth in macOS and grant permission to Chrome.');
+          return;
+        }
+      } catch (e) {}
+
+      if (isRunning) {
+        disconnect();
+        await new Promise(r => setTimeout(r, 120));
+      }
+
+      // Read AUX setting at start of session
+      const auxCheck = document.getElementById('aux-toggle');
+      auxEnabled = auxCheck ? auxCheck.checked : false;
+      currentChannelCount = getActiveChannelCount();
+
+      // Recreate waveforms (important for AUX support)
+      createWaveformCanvases();
+
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ services: [MUSE_SERVICE] }],
+          optionalServices: [MUSE_SERVICE]
+        });
+
+        realDevice = device;
+        device.addEventListener('gattserverdisconnected', onRealDeviceDisconnect);
+
+        const gatt = await device.gatt.connect();
+        realGATT = gatt;
+
+        const service = await gatt.getPrimaryService(MUSE_SERVICE);
+
+        // Control channel
+        realControlChar = await service.getCharacteristic(CONTROL_CHAR);
+
+        // EEG channels + notifications (respect AUX probe)
+        const eegCharsToUse = getEEGCharacteristics();
+        realEEGChars = [];
+        for (let ch = 0; ch < eegCharsToUse.length; ch++) {
+          const char = await service.getCharacteristic(eegCharsToUse[ch]);
+          await char.startNotifications();
+          char.addEventListener('characteristicvaluechanged', (ev) => {
+            handleRealEEGData(ch, ev.target.value);
+          });
+          realEEGChars.push(char);
+        }
+
+        // Gyroscope for head position (main request)
+        try {
+          const gyroChar = await service.getCharacteristic(GYROSCOPE_CHAR);
+          await gyroChar.startNotifications();
+          gyroChar.addEventListener('characteristicvaluechanged', (ev) => {
+            handleGyroData(ev.target.value);
+          });
+          gyroAvailable = true;
+        } catch (e) {
+          console.warn('Gyroscope not available on this Muse');
+          gyroAvailable = false;
+        }
+
+        // Initialize state
+        isRealDevice = true;
+        isRunning = true;
+        startTime = Date.now();
+        realSampleCount = 0;
+        const n = getActiveChannelCount();
+        eegBuffers = Array.from({ length: n }, () => []);
+        spectrogram = [];
+        smoothedBandPowers = { delta: 0.3, theta: 0.5, alpha: 1.0, beta: 0.6, gamma: 0.25 };
+        currentBandPowers = { ...smoothedBandPowers };
+
+        // Send startup sequence (same as muse-js / web-muse)
+        const preset = auxEnabled ? 'p20' : 'p21';   // p20 = AUX enabled, p21 = standard 4ch
+        await sendMuseCommand('h');           // halt
+        await new Promise(r => setTimeout(r, 120));
+        await sendMuseCommand(preset);
+        await new Promise(r => setTimeout(r, 90));
+        await sendMuseCommand('s');           // start
+        await new Promise(r => setTimeout(r, 70));
+        await sendMuseCommand('d');           // resume / data
+
+        // UI updates for real device
+        document.getElementById('connect-demo-btn').classList.add('hidden');
+        document.getElementById('connect-real-btn').classList.add('hidden');
+        document.getElementById('disconnect-btn').classList.remove('hidden');
+        document.getElementById('disconnect-btn').classList.add('flex');
+
+        lastWasReal = true;
+
+        const pill = document.getElementById('status-pill');
+        const text = document.getElementById('status-text');
+        pill.className = 'status-pill px-4 h-8 rounded-3xl border flex items-center gap-x-2 bg-indigo-950 border-indigo-700 text-indigo-300';
+        text.innerHTML = `<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-400"></span></span> REAL MUSE`;
+
+        document.getElementById('session-time').textContent = '00:00';
+        document.getElementById('sample-count').textContent = '0';
+
+        // Start the shared rendering/analysis loop
+        mainLoop();
+
+        // Prime the analysis + spectrogram
+        setTimeout(() => {
+          updateAnalysis();
+          drawSpectrum();
+        }, 350);
+
+        showToast('Connected to real Muse headset! Data is now live.', 'success');
+
+        hideConnectionTroubleshooter();
+        updateAuxStatusLabel();
+        const hint = document.getElementById('sliders-hint');
+        if (hint) hint.classList.remove('hidden');
+
+      } catch (err) {
+        console.error('Real Muse connection failed:', err);
+        isRealDevice = false;
+        realDevice = null;
+
+        const raw = (err.message || err.toString() || 'Unknown error').toLowerCase();
+
+        let friendly = '';
+        let extra = '';
+
+        if (raw.includes('user cancelled') || raw.includes('cancelled')) {
+          friendly = 'Connection cancelled from the Bluetooth picker.';
+        } else if (raw.includes('gatt server is disconnected') || raw.includes('networkerror')) {
+          friendly = 'Could not maintain connection to the Muse.';
+          extra = 'The headset may have gone to sleep or is connected to another device (phone app). Power cycle the Muse and try again.';
+        } else if (raw.includes('no devices') || raw.includes('not found') || raw.includes('not available')) {
+          friendly = 'No Muse headband found.';
+          extra = 'Make sure it is powered on (light is lit) and close to your computer. Try forgetting it in macOS Bluetooth settings.';
+        } else if (raw.includes('permission') || raw.includes('denied')) {
+          friendly = 'Browser does not have Bluetooth permission.';
+          extra = 'On macOS: System Settings → Privacy & Security → Bluetooth → allow Chrome/Edge.';
+        } else if (raw.includes('bluetooth')) {
+          friendly = 'Bluetooth adapter issue.';
+          extra = 'Restart Bluetooth on your Mac or restart Chrome.';
+        } else {
+          friendly = err.message || 'Unknown error';
+        }
+
+        const toastMsg = 'Could not connect to Muse: ' + friendly + (extra ? ' ' + extra : '');
+        showToast(toastMsg, 'warn');
+
+        // Show persistent troubleshooting hint
+        showConnectionTroubleshooter(friendly, extra);
+      }
+    }
+
+    function disconnect() {
+      isRunning = false;
+      
+      if (sonificationEnabled) {
+        sonificationEnabled = false;
+        const btn = document.getElementById('audio-btn');
+        btn.classList.remove('!bg-emerald-900', '!border-emerald-700');
+        btn.querySelector('i').classList.replace('fa-volume-up', 'fa-volume-off');
+      }
+      
+      if (oscillators.length) {
+        oscillators.forEach(o => { try { o.gain.gain.value = 0; } catch(e){} });
+        oscillators = [];
+      }
+      
+      clearInterval(sessionTimer);
+      sessionTimer = null;
+      
+      // UI reset
+      const pill = document.getElementById('status-pill');
+      const text = document.getElementById('status-text');
+      pill.className = 'status-pill px-4 h-8 rounded-3xl border flex items-center gap-x-2 bg-slate-900 border-slate-700 text-slate-400';
+      text.textContent = 'DISCONNECTED';
+      
+      document.getElementById('connect-demo-btn').classList.remove('hidden');
+      document.getElementById('connect-real-btn').classList.remove('hidden');
+      document.getElementById('disconnect-btn').classList.add('hidden');
+      document.getElementById('disconnect-btn').classList.remove('flex');
+      
+      document.getElementById('sample-count').textContent = '0';
+      document.getElementById('session-time').textContent = '—';
+      
+      // Clear brain wave spectrogram
+      spectrogram = [];
+
+      const hint = document.getElementById('sliders-hint');
+      if (hint) hint.classList.add('hidden');
+
+      const auxLabel = document.getElementById('aux-status');
+      if (auxLabel) auxLabel.textContent = '';
+
+      // Reset gyro / head position
+      gyro = { x: 0, y: 0, z: 0 };
+      orientation = { pitch: 0, roll: 0, yaw: 0 };
+      gyroAvailable = false;
+      updateHeadPositionVisual();
+      
+      // Stop waveform updates but leave last frame visible
+    }
+
+    function resetSession() {
+      const wasRunning = isRunning;
+      disconnect();
+      
+      // Reset buffers & counters
+      const n = getActiveChannelCount();
+      eegBuffers = Array.from({ length: n }, () => []);
+      sampleCounter = 0;
+      recordedData = [];
+      isRecording = false;
+      document.getElementById('record-btn').classList.remove('!bg-red-900', '!border-red-700');
+      document.getElementById('record-text').innerHTML = 'Record CSV';
+      
+      // Clear canvases
+      CHANNELS.forEach((_, i) => {
+        const c = document.getElementById(`wave-${i}`);
+        if (c) c.getContext('2d').clearRect(0, 0, c.width, c.height);
+      });
+      
+      const spec = document.getElementById('spectrum-canvas');
+      spec.getContext('2d').clearRect(0, 0, spec.width, spec.height);
+      
+      spectrogram = [];
+      
+      // Reset bands
+      smoothedBandPowers = { delta: 0.4, theta: 0.5, alpha: 1.2, beta: 0.6, gamma: 0.2 };
+      updateBandPowersUI(smoothedBandPowers);
+
+      // Reset head position
+      orientation = { pitch: 0, roll: 0, yaw: 0 };
+      gyro = { x: 0, y: 0, z: 0 };
+      updateHeadPositionVisual();
+      
+      resetSliders();
+      
+      if (wasRunning) {
+        setTimeout(connectDemo, 160);
+      }
+    }
+
+    // ==================== RECORDING ====================
+    function toggleRecording() {
+      if (!isRunning) {
+        showToast('Start the demo first to record data', 'warn');
+        return;
+      }
+      
+      isRecording = !isRecording;
+      const btn = document.getElementById('record-btn');
+      const txt = document.getElementById('record-text');
+      
+      if (isRecording) {
+        recordedData = [];
+        btn.classList.add('!bg-red-900', '!border-red-700');
+        txt.innerHTML = `<span class="text-red-300">STOP &amp; SAVE</span>`;
+        showToast('Recording started — EEG + timestamps captured', 'success');
+      } else {
+        btn.classList.remove('!bg-red-900', '!border-red-700');
+        txt.innerHTML = 'Record CSV';
+        
+        if (recordedData.length > 30) {
+          downloadCSV();
+        } else {
+          showToast('Not enough data recorded', 'warn');
+        }
+      }
+    }
+
+    function downloadCSV() {
+      if (!recordedData.length) return;
+      
+      const names = getChannelNames();
+      const headers = ['seconds', ...names];
+      let csv = headers.join(',') + '\n';
+      
+      recordedData.forEach(row => {
+        const vals = [row.t.toFixed(3)];
+        names.forEach(name => {
+          vals.push((row[name] ?? 0).toFixed(3));
+        });
+        csv += vals.join(',') + '\n';
+      });
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `muse-eeg-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showToast(`Saved ${recordedData.length} samples to CSV`, 'success');
+      recordedData = [];
+    }
+
+    // ==================== HELP / REAL HARDWARE ====================
+    function showHelp() {
+      const modal = document.createElement('div');
+      modal.className = `fixed inset-0 bg-black/80 backdrop-blur z-[100] flex items-center justify-center p-6`;
+      modal.innerHTML = `
+        <div onclick="event.target.remove()" class="absolute inset-0"></div>
+        <div class="relative section-card max-w-xl w-full rounded-3xl p-6 border border-slate-700 max-h-[85vh] overflow-auto">
+          <div class="flex justify-between mb-4">
+            <div class="font-semibold text-xl tracking-tight">How to use this monitor + Real Muse</div>
+            <button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-white">✕</button>
+          </div>
+          
+          <div class="space-y-5 text-sm text-slate-300">
+            <div>
+              <div class="font-semibold text-white mb-1">Demo vs Real</div>
+              <div>Use <span class="font-medium">"Demo"</span> for instant simulated brain waves. Use <span class="font-medium text-indigo-300">"Connect Real Muse"</span> to stream live data from an actual Muse 2 or Muse S headset over Bluetooth.</div>
+            </div>
+
+            <div>
+              <div class="font-semibold text-white mb-1">Connecting a real Muse (common issues on macOS)</div>
+              <ul class="list-disc pl-5 space-y-1 text-xs">
+                <li>Make sure the Muse is powered on (the light is on) and not connected to the official Muse phone app.</li>
+                <li><strong>macOS Bluetooth permission:</strong> Go to <strong>System Settings → Privacy & Security → Bluetooth</strong> and enable it for Google Chrome (or Microsoft Edge).</li>
+                <li>If the Muse was previously paired, go to macOS Bluetooth settings and "Forget" the device, then try again.</li>
+                <li>Best experience: Use the latest Chrome. The page works best when opened from localhost or over HTTPS.</li>
+                <li>Power cycle the Muse (turn completely off, wait 5 seconds, turn back on) right before connecting.</li>
+              </ul>
+            </div>
+
+            <div>
+              <div class="font-semibold text-white mb-1">Recording & Audio</div>
+              <div>The Record CSV button saves raw microvolt data. Audio Feedback turns your brain waves into sound.</div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function showRealInstructions() {
+      const modal = document.createElement('div');
+      modal.className = `fixed inset-0 bg-black/80 backdrop-blur z-[100] flex items-center justify-center p-6`;
+      modal.innerHTML = `
+        <div onclick="event.target.remove()" class="absolute inset-0"></div>
+        <div class="relative section-card max-w-[560px] w-full rounded-3xl p-6 border border-slate-700 text-sm">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <div class="font-semibold text-xl tracking-tight">Real Hardware Integration</div>
+              <div class="text-emerald-300 text-xs font-medium">Muse 2 / Muse S — Web Bluetooth</div>
+            </div>
+            <button onclick="this.closest('.fixed').remove()" class="text-slate-400">✕</button>
+          </div>
+          
+          <div class="prose prose-invert text-slate-300 text-sm">
+            <p class="mb-3">This standalone page is intentionally self-contained. For <strong>live data from a real Muse headband</strong> use the actively maintained <strong>web-muse</strong> library:</p>
+            
+            <div class="bg-[#0b0d15] border border-slate-800 rounded-2xl p-3 my-3 text-xs font-mono">
+              npm install web-muse<br>
+              # or from GitHub<br>
+              import { connectMuse } from "web-muse";
+            </div>
+            
+            <ol class="list-decimal pl-5 space-y-1 text-xs">
+              <li>Connect via <code>await connectMuse()</code> — triggers the native Bluetooth picker</li>
+              <li>Stream EEG at 256 Hz with built-in circular buffers</li>
+              <li>Use <code>powerData</code> or run your own FFT for band powers</li>
+              <li>Excellent mock mode included (no hardware needed for development)</li>
+            </ol>
+            
+            <div class="mt-4 text-xs flex gap-2">
+              <a href="https://github.com/itayinbarr/web-muse" target="_blank" 
+                 class="inline-flex items-center px-3 py-1 rounded-2xl border border-cyan-800 bg-cyan-950 text-cyan-300 hover:bg-cyan-900">web-muse on GitHub →</a>
+              <a href="https://github.com/urish/muse-js" target="_blank" 
+                 class="inline-flex items-center px-3 py-1 rounded-2xl border border-slate-700 bg-slate-900 hover:bg-slate-800">classic muse-js</a>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const colors = {
+        success: 'bg-emerald-900 border-emerald-700 text-emerald-200',
+        warn: 'bg-amber-900 border-amber-700 text-amber-200'
+      };
+      
+      toast.className = `px-4 py-2.5 rounded-2xl border ${colors[type]} text-sm flex items-center gap-x-2 shadow-xl max-w-xs`;
+      toast.innerHTML = `
+        <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+        <div>${message}</div>
+      `;
+      
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.transition = 'all 180ms';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 180);
+      }, 3200);
+    }
+
+    function showConnectionTroubleshooter(title, extra) {
+      const box = document.getElementById('real-troubleshooter');
+      const content = document.getElementById('troubleshooter-content');
+      if (!box || !content) return;
+
+      let html = `<div class="font-semibold mb-1">${title}</div>`;
+
+      if (extra) {
+        html += `<div class="text-amber-300">${extra}</div>`;
+      }
+
+      html += `
+        <div class="mt-2 text-[10px] text-amber-300/80 leading-snug">
+          Common fixes on macOS:
+          <br>• System Settings → Privacy & Security → Bluetooth → enable for Chrome/Edge
+          <br>• Power cycle the Muse (turn off/on)
+          <br>• Disconnect Muse from the official phone app first
+          <br>• Try Chrome (not Edge) and open this page over localhost or HTTPS
+        </div>
+      `;
+
+      content.innerHTML = html;
+      box.classList.remove('hidden');
+    }
+
+    function hideConnectionTroubleshooter() {
+      const box = document.getElementById('real-troubleshooter');
+      if (box) box.classList.add('hidden');
+    }
+
+    function onAuxToggleChange() {
+      const checkbox = document.getElementById('aux-toggle');
+      if (!checkbox) return;
+
+      const desiredAux = checkbox.checked;
+
+      if (isRunning) {
+        // Auto-reconnect with the new AUX setting
+        const wasReal = isRealDevice || lastWasReal;
+
+        showToast(
+          desiredAux 
+            ? 'Enabling AUX probe — reconnecting...' 
+            : 'Disabling AUX probe — reconnecting...',
+          'success'
+        );
+
+        // Disconnect current session
+        disconnect();
+
+        // Reconnect after a short delay so disconnect fully completes
+        setTimeout(() => {
+          auxEnabled = desiredAux;           // apply the new setting
+          currentChannelCount = getActiveChannelCount();
+
+          if (wasReal) {
+            lastWasReal = true;
+            connectRealMuse();
+          } else {
+            lastWasReal = false;
+            connectDemo();
+          }
+        }, 280);
+
+        return;
+      }
+
+      // Not connected yet — just store the preference
+      auxEnabled = desiredAux;
+    }
+
+    function updateAuxStatusLabel() {
+      const el = document.getElementById('aux-status');
+      if (!el) return;
+      el.textContent = auxEnabled ? '• AUX probe active' : '';
+      el.style.color = auxEnabled ? '#4ade80' : '';
+    }
+
+    function simulateHeadMovement() {
+      if (isRealDevice) return;
+
+      const t = Date.now() / 1000;
+      // Gentle, realistic meditation-style micro-movements
+      const targetPitch = Math.sin(t * 0.3) * 6 + Math.sin(t * 0.11) * 3;
+      const targetRoll  = Math.sin(t * 0.27 + 1.2) * 5;
+      const targetYaw   = Math.sin(t * 0.08) * 12;
+
+      // Very slow integration in demo
+      orientation.pitch = orientation.pitch * 0.96 + targetPitch * 0.04;
+      orientation.roll  = orientation.roll  * 0.96 + targetRoll  * 0.04;
+      orientation.yaw   = orientation.yaw   * 0.96 + targetYaw   * 0.04;
+
+      // Fake low gyro rates
+      gyro.x = (targetPitch - orientation.pitch) * 1.8;
+      gyro.y = (targetRoll  - orientation.roll)  * 1.8;
+      gyro.z = (targetYaw   - orientation.yaw)   * 1.2;
+
+      updateHeadPositionVisual();
+    }
+
+    function updateHeadPositionVisual() {
+      const visual = document.getElementById('head-position-visual');
+      const pitchEl = document.getElementById('gyro-pitch');
+      const rollEl  = document.getElementById('gyro-roll');
+      const yawEl   = document.getElementById('gyro-yaw');
+
+      const xEl = document.getElementById('gyro-val-x');
+      const yEl = document.getElementById('gyro-val-y');
+      const zEl = document.getElementById('gyro-val-z');
+
+      const barX = document.getElementById('gyro-bar-x');
+      const barY = document.getElementById('gyro-bar-y');
+      const barZ = document.getElementById('gyro-bar-z');
+
+      const statusEl = document.getElementById('gyro-status');
+
+      if (!visual || !pitchEl) return;
+
+      // Update numbers
+      pitchEl.textContent = Math.round(orientation.pitch) + '°';
+      rollEl.textContent  = Math.round(orientation.roll) + '°';
+      yawEl.textContent   = Math.round(orientation.yaw) + '°';
+
+      // Update velocity numbers and bars (clamped for display)
+      const clamp = (v, max = 80) => Math.max(-max, Math.min(max, v));
+      const vx = clamp(gyro.x);
+      const vy = clamp(gyro.y);
+      const vz = clamp(gyro.z);
+
+      if (xEl) xEl.textContent = vx.toFixed(1);
+      if (yEl) yEl.textContent = vy.toFixed(1);
+      if (zEl) zEl.textContent = vz.toFixed(1);
+
+      const toPercent = (v, max = 80) => ((Math.abs(v) / max) * 100);
+      if (barX) barX.style.width = Math.min(100, toPercent(vx)) + '%';
+      if (barY) barY.style.width = Math.min(100, toPercent(vy)) + '%';
+      if (barZ) barZ.style.width = Math.min(100, toPercent(vz)) + '%';
+
+      // Visual head tilt using CSS 3D-like transform (slightly more range on larger visual)
+      const tiltX = Math.max(-42, Math.min(42, orientation.pitch));
+      const tiltY = Math.max(-42, Math.min(42, -orientation.roll));
+
+      // Combine rotation (yaw) + tilt
+      const yawRot = Math.round(orientation.yaw * 0.65);
+      visual.style.transform = `rotate(${yawRot}deg) rotateX(${tiltX * 0.55}deg) rotateY(${tiltY * 0.55}deg)`;
+
+      // Keep eyes open or closed based on blink state
+      updateEyeState();
+
+      // Color the gyro status
+      if (statusEl) {
+        const moving = Math.abs(gyro.x) + Math.abs(gyro.y) + Math.abs(gyro.z) > 8;
+        statusEl.textContent = moving ? 'Moving' : 'Still';
+        statusEl.style.color = moving ? '#fbbf24' : '#4ade80';
+      }
+    }
+
+    // ==================== BLINK DETECTION & EYE ANIMATION ====================
+
+    function updateEyeState() {
+      const leftWhite  = document.getElementById('eye-left-white');
+      const rightWhite = document.getElementById('eye-right-white');
+      const leftPupil  = document.getElementById('eye-left-pupil');
+      const rightPupil = document.getElementById('eye-right-pupil');
+
+      if (!leftWhite || !rightWhite) return;
+
+      if (isBlinking) {
+        // Closed eyes - flatten the eye whites
+        leftWhite.setAttribute('ry', '0.8');
+        rightWhite.setAttribute('ry', '0.8');
+        if (leftPupil) leftPupil.style.display = 'none';
+        if (rightPupil) rightPupil.style.display = 'none';
+      } else {
+        // Open eyes - normal shape
+        leftWhite.setAttribute('ry', '5');
+        rightWhite.setAttribute('ry', '5');
+        if (leftPupil) leftPupil.style.display = '';
+        if (rightPupil) rightPupil.style.display = '';
+
+        // Subtle pupil movement based on head tilt (makes the head feel more alive)
+        if (leftPupil && rightPupil) {
+          const pupilShiftX = Math.max(-1.2, Math.min(1.2, orientation.roll * -0.04));
+          const pupilShiftY = Math.max(-1.0, Math.min(1.0, orientation.pitch * 0.03));
+
+          leftPupil.setAttribute('cx', 28 + pupilShiftX);
+          leftPupil.setAttribute('cy', 38 + pupilShiftY);
+          rightPupil.setAttribute('cx', 60 + pupilShiftX);
+          rightPupil.setAttribute('cy', 38 + pupilShiftY);
+        }
+      }
+    }
+
+    function triggerBlink(duration = 180) {
+      if (isBlinking) return;
+
+      isBlinking = true;
+      updateEyeState();
+
+      // Optional subtle head movement on blink (very small)
+      const visual = document.getElementById('head-position-visual');
+      if (visual) {
+        const originalTransform = visual.style.transform;
+        visual.style.transitionDuration = '40ms';
+        visual.style.transform = originalTransform + ' translateY(1px)';
+
+        setTimeout(() => {
+          if (visual) {
+            visual.style.transitionDuration = '100ms';
+            visual.style.transform = originalTransform;
+          }
+        }, 80);
+      }
+
+      setTimeout(() => {
+        isBlinking = false;
+        updateEyeState();
+      }, duration);
+    }
+
+    function checkForBlink() {
+      if (!isRunning) return;
+
+      const n = getActiveChannelCount();
+      if (n < 3) return; // Need at least frontal channels
+
+      // Use frontal channels (AF7 = 1, AF8 = 2)
+      const ch1 = eegBuffers[1] || [];
+      const ch2 = eegBuffers[2] || [];
+
+      if (ch1.length < 8 || ch2.length < 8) return;
+
+      // Look at the most recent samples
+      const recent1 = ch1.slice(-6);
+      const recent2 = ch2.slice(-6);
+
+      const max1 = Math.max(...recent1);
+      const min1 = Math.min(...recent1);
+      const max2 = Math.max(...recent2);
+      const min2 = Math.min(...recent2);
+
+      const delta1 = max1 - min1;
+      const delta2 = max2 - min2;
+
+      const now = Date.now();
+
+      // Blink detection: large sudden spike on either frontal channel
+      if ((delta1 > blinkThreshold || delta2 > blinkThreshold) && now - lastBlinkTime > 450) {
+        lastBlinkTime = now;
+        triggerBlink();
+      }
+
+      // Keep a small history for demo simulation
+      frontalHistory.push((delta1 + delta2) / 2);
+      if (frontalHistory.length > 40) frontalHistory.shift();
+    }
+
+    function simulateBlinkInDemo() {
+      if (isRealDevice || !isRunning) return;
+
+      // Random occasional blinks in demo mode (roughly every 3-8 seconds)
+      if (Math.random() < 0.012) {
+        triggerBlink(160 + Math.random() * 80);
+      }
+    }
+
+    // ==================== INIT ====================
+    function initialize() {
+      // Tailwind script already loaded via CDN
+      // Seed initial UI
+      createWaveformCanvases();
+      createBandPowerUI();
+
+      // Sync AUX checkbox with default state
+      const auxCheck = document.getElementById('aux-toggle');
+      if (auxCheck) auxCheck.checked = auxEnabled;
+
+      // Initialize eyes as open
+      setTimeout(() => {
+        const leftWhite  = document.getElementById('eye-left-white');
+        const rightWhite = document.getElementById('eye-right-white');
+        if (leftWhite) leftWhite.setAttribute('ry', '5');
+        if (rightWhite) rightWhite.setAttribute('ry', '5');
+      }, 50);
+      
+      // Initial band display
+      const initial = { delta: 0.35, theta: 0.48, alpha: 1.15, beta: 0.55, gamma: 0.19 };
+      smoothedBandPowers = { ...initial };
+      currentBandPowers = { ...initial };
+      updateBandPowersUI(initial);
+      
+      // Seed a nice initial mental state
+      document.getElementById('mental-state-label').textContent = 'Relaxed';
+      document.getElementById('mental-state-desc').textContent = 'Elevated alpha • calm awareness';
+      document.getElementById('meditation-score').textContent = '71';
+      
+      // Initial sliders
+      document.getElementById('relax-val').textContent = '50';
+      document.getElementById('focus-val').textContent = '50';
+      document.getElementById('calm-val').textContent = '35';
+      document.getElementById('active-val').textContent = '20';
+      
+      // Draw empty spectrum hint
+      const spec = document.getElementById('spectrum-canvas');
+      const ctx = spec.getContext('2d');
+      ctx.fillStyle = '#334155';
+      ctx.font = '11px Inter, system-ui, sans-serif';
+      ctx.fillText('Start the monitor to see live brain waves', 22, 52);
+      
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'r' && e.metaKey) {
+          e.preventDefault();
+          if (isRunning) toggleRecording();
+        }
+        if (e.key === 'Escape' && isRunning) {
+          disconnect();
+        }
+        if (e.key.toLowerCase() === 'c' && !isRunning) {
+          connectDemo();
+        }
+      });
+      
+      // Gentle welcome hint after 3s if not connected
+      setTimeout(() => {
+        if (!isRunning) {
+          const btn = document.getElementById('connect-real-btn');
+          if (btn) btn.classList.add('animate-pulse');
+          setTimeout(() => btn && btn.classList.remove('animate-pulse'), 2200);
+        }
+      }, 3200);
+      
+      // Make spectrum canvas responsive-ish
+      window.addEventListener('resize', () => {
+        if (isRunning) drawSpectrum();
+      });
+      
+      console.log('%c[Muse Brainwave Monitor] Ready — beautiful standalone demo initialized.', 'color:#475569');
+    }
+
+    // Boot
+    window.onload = initialize;
+  </script>
+</body>
+</html>
